@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High Quality Downloader</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 50px; background: #f0f2f5; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 90%; max-width: 500px; text-align: center; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background: #0070f3; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; }
+        button:hover { background: #0051a2; }
+        #status { margin-top: 20px; font-weight: bold; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-right: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚀 1080p Video Downloader</h2>
+    <p>Powered by Cobalt API</p>
+    
+    <input type="text" id="urlInput" placeholder="Paste YouTube URL here...">
+    <button onclick="downloadVideo()">Download Now</button>
+    
+    <div id="status"></div>
+</div>
+
+<script>
+    async function downloadVideo() {
+        const url = document.getElementById('urlInput').value;
+        const statusDiv = document.getElementById('status');
+        
+        if (!url) {
+            statusDiv.innerHTML = "<span style='color:red'>Please enter a URL</span>";
+            return;
+        }
+
+        statusDiv.innerHTML = "<div class='loader'></div> Processing (Wait 5-10s)...";
+
+        try {
+            const response = await fetch('/get-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                statusDiv.innerHTML = "✅ Ready! Downloading...";
+                // Create a hidden link to trigger download
+                const a = document.createElement('a');
+                a.href = data.download_url;
+                a.download = data.filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                statusDiv.innerHTML = `<span style='color:red'>Error: ${data.error}</span>`;
+            }
+        } catch (err) {
+            statusDiv.innerHTML = `<span style='color:red'>Server Error. Try again later.</span>`;
+        }
+    }
+</script>
+
+</body>
+</html>
